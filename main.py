@@ -192,7 +192,7 @@ def extract_archetype_info(file_path):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    file_path = 'C:\\Users\\Bram\\Desktop\\Personal\\Python scripts\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_class_guide_acg_abilities_class.lst'
+    file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_class_guide_acg_abilities_class.lst'
     extract_class_features(file_path)
     extract_archetype_info(file_path)
 
