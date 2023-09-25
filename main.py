@@ -7,7 +7,7 @@ import re
 import pandas as pd
 
 
-def extract_class_features(file_name):
+def extract_class_features(file_name, output_file_name, source_book_name):
     # Read the text file
     with open(file_name, 'r') as file:
         data = file.read()
@@ -17,10 +17,11 @@ def extract_class_features(file_name):
     feature_keys = []
     descriptions = []
     levels = []
+    sources = []
 
     feature_key = None
     description = ""
-    level = ""
+    level = 0
 
     # Regular expressions to match relevant lines
     block_pattern = r'(?i)###Block: (.+) Class features'
@@ -40,28 +41,17 @@ def extract_class_features(file_name):
 
         for line in feature_lines:
             line = line.strip()
-            # if line.startswith("###"):
-                # Start of a new class feature block, save the extracted information
-                # if feature_key:
-                #     class_names.append(class_name.strip())
-                #     feature_keys.append(feature_key.strip())
-                #     descriptions.append(description.strip())
-                #     levels.append(level)
-                # Reset the variables for the next class feature
-                # feature_key = None
-                # description = ""
-                # level = ""
-            # else:
 
             # Split the line based on tab character or line end
             parts = line.split("\t")
             for part in parts:
                 if part.startswith("KEY:"):
                     feature_key = part.split("KEY:")[1]
+                    feature_key = re.search(r'~(.+)', feature_key).group(1).strip()
                 elif part.startswith("DESC:"):
                     description = part.split("DESC:")[1]
                     # Extract the level from the description if present
-                    for i in range(0, 3):
+                    for i in range(0, 4):
                         if i == 0:
                             level_match = re.search(r'(?i)At (\d+)s?t? level', description)
                             if level_match:
@@ -88,25 +78,27 @@ def extract_class_features(file_name):
                 feature_keys.append(feature_key.strip())
                 descriptions.append(description.strip())
                 levels.append(level)
+                sources.append(source_book_name)
 
                 # Reset the variables for the next class feature
                 feature_key = None
                 description = ""
-                level = ""
+                level = 0
 
     # Create a DataFrame
     data_dict = {
         'Class': class_names,
-        'Feature Key': feature_keys,
+        'Class Feature': feature_keys,
         'Description': descriptions,
-        'Level Learned': levels
+        'Level': levels,
+        'Source': sources
     }
     df = pd.DataFrame(data_dict)
 
     # Save the DataFrame to an Excel file
-    df.to_excel('class_features.xlsx')
+    df.to_excel(output_file_name)
 
-def extract_archetype_info(file_path):
+def extract_archetype_info(file_path, output_file_name, source_book_name):
     archetypes = {}
     archetype_name = None
     archetype_parent_class_name = None
@@ -149,7 +141,7 @@ def extract_archetype_info(file_path):
                 if class_feature_description:
                     # Todo: This level isn't correct and is not resetting to 0 when we are unable to find a match.
                     level_match = None
-                    for i in range(0, 3):
+                    for i in range(0, 4):
                         if i == 0:
                             level_match = re.search(r'(?i)At (\d+)s?t? level', class_feature_description[0])
                             if level_match:
@@ -168,6 +160,8 @@ def extract_archetype_info(file_path):
                                 break
                     if level_match:
                         class_feature_level = level_match.group(1)
+                    else:
+                        class_feature_level = 0
 
                 if class_feature_name:
                     class_feature_info = {
@@ -175,7 +169,7 @@ def extract_archetype_info(file_path):
                         'Parent Class': archetype_parent_class_name,
                         'Archetype': archetype_name,
                         'Description': class_feature_description.group(1) if class_feature_description else '',
-                        'Level': class_feature_level if class_feature_level else ''
+                        'Level': class_feature_level if class_feature_level else 0
                     }
 
                 # Making sure the array doesn't get an exception by filling it with keys if they are not present.
@@ -187,13 +181,47 @@ def extract_archetype_info(file_path):
                 #Appending the actual data.
                 archetypes[archetype_parent_class_name][archetype_name].append(class_feature_info)
 
-    return archetypes
+        # Convert the archetypes dictionary to a pandas DataFrame
+        archetype_data = []
+        for parent_class, archetypes_dict in archetypes.items():
+            for archetype, features in archetypes_dict.items():
+                for feature in features:
+                    archetype_data.append({
+                        'Parent Class': parent_class,
+                        'Archetype': archetype,
+                        'Class Feature': feature['Name'],
+                        'Description': feature['Description'],
+                        'Level': feature['Level'],
+                        'Source': source_book_name
+                    })
 
+        df = pd.DataFrame(archetype_data)
+
+        # Write the DataFrame to an Excel file
+        df.to_excel(output_file_name)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    file_path = 'C:\\Users\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_class_guide_acg_abilities_class.lst'
-    extract_class_features(file_path)
-    extract_archetype_info(file_path)
+    # Code specific to the ACG:
+    file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_class_guide_acg_abilities_class.lst'
+    extract_class_features(file_path, "acg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
+    extract_archetype_info(file_path, "acg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    # Code specific to the PCG:
+    # Todo: The APG uses a different key for class features, it looks like this: TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
+    file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_players_guide_apg_abilities_class.lst'
+    extract_class_features(file_path, "apg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
+    extract_archetype_info(file_path, "apg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
+
+    # Code specific to the CR:
+    # Todo: The CR uses a different key for class features, it looks like this: TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
+    file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_core_rulebook_cr_abilities_class.lst'
+    extract_class_features(file_path, "cr_class_features.xlsx", "Pathfinder Roleplaying Game: Core Rulebook")
+    extract_archetype_info(file_path, "cr_class_features.xlsx", "Pathfinder Roleplaying Game: Core Rulebook")
+
+    # Code specific to the Ultimate Combat Guide:
+    # Todo: The CR uses a different key for class features, it looks like this: TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
+    # Todo: The CR uses a different key for archetype class features, it looks like this: KEY:{archetype_name} ~ {class_feature_name} CATEGORY:Special Ability TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
+    file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_core_rulebook_cr_abilities_class.lst'
+    extract_class_features(file_path, "cr_class_features.xlsx", "Pathfinder Roleplaying Game: Ultimate Combat")
+    extract_archetype_info(file_path, "cr_class_features.xlsx", "Pathfinder Roleplaying Game: Ultimate Combat")
