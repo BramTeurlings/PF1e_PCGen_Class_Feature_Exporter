@@ -209,6 +209,7 @@ if __name__ == '__main__':
 
     # Code specific to the PCG:
     # Todo: The APG uses a different key for class features, it looks like this: TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
+    # Todo: Might not include normal classes but only archetypes?
     file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_players_guide_apg_abilities_class.lst'
     extract_class_features(file_path, "apg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
     extract_archetype_info(file_path, "apg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
