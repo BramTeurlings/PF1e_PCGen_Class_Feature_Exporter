@@ -257,66 +257,79 @@ def extract_archetype_info_apg(file_path, output_file_name, source_book_name):
                             if type_match:
                                 archetype_parent_class_name = type_match.group(1)
                         elif re.search(r'(?i)Class Feature\.Sorcerer Class Feature\.(.+) ~ Power LVL (.+).Sorcerer', class_feature_type):
-                            # Dealing with sorcerer bloodline, set archetype name to bloodline name
+                            # Dealing with wizard school, set sub_feature_name to archetype name
                             sub_feature_name = archetype_name
                             archetype_name = None
                             archetype_parent_class_name = "Sorcerer"
-                            # Capture the bloodline name
+                            # Capture the bloodline level
                             bloodline_ability_level_match = re.search(r'~ Power LVL (.+).Sorcerer', class_feature_type)
                             if bloodline_ability_level_match:
                                 class_feature_level = bloodline_ability_level_match.group(1)
+                        elif re.search(r'(?i)WizardClassFeatures\.SpecialQuality\.SuperNatural', class_feature_type) or re.search(r'(?i)WizardClassFeatures\.SpecialQuality\.SpellLike', class_feature_type):
+                            # Dealing with sorcerer bloodline, set sub_feature_name to archetype name
+                            sub_feature_name = archetype_name
+                            archetype_name = None
+                            archetype_parent_class_name = "Wizard"
+                        elif re.search(r'(?i)SpecialQuality\.SuperNatural\.DomainPower', class_feature_type):
+                            # Dealing with cleric domain power, set sub_feature_name to archetype name
+                            sub_feature_name = archetype_name
+                            archetype_name = None
+                            archetype_parent_class_name = "Cleric"
                         else:
                             is_valid_archetype_feature = 0
                     elif part.startswith("DESC:"):
-                        class_feature_description = part.split("DESC:")[1]
-                        if not class_feature_level:
-                            # Extract the level from the description if present
-                            for i in range(0, 4):
-                                if i == 0:
-                                    level_match = re.search(r'(?i)At (\d+)s?t? level', class_feature_description)
-                                    if level_match:
-                                        break
-                                if i == 1:
-                                    level_match = re.search(r'(?i)At (\d+)n?d? level', class_feature_description)
-                                    if level_match:
-                                        break
-                                if i == 2:
-                                    level_match = re.search(r'(?i)At (\d+)r?d? level', class_feature_description)
-                                    if level_match:
-                                        break
-                                if i == 3:
-                                    level_match = re.search(r'(?i)At (\d+)t?h? level', class_feature_description)
-                                    if level_match:
-                                        break
-                            if level_match:
-                                class_feature_level = level_match.group(1)
-                            else:
-                                class_feature_level = 0
+                        description_match = part.split("DESC:")[1]
+                        if description_match:
+                            if not class_feature_description:
+                                class_feature_description = ""
+                            class_feature_description += description_match
+                            if not class_feature_level:
+                                # Extract the level from the description if present
+                                for i in range(0, 4):
+                                    if i == 0:
+                                        level_match = re.search(r'(?i)At (\d+)s?t? level', class_feature_description)
+                                        if level_match:
+                                            break
+                                    if i == 1:
+                                        level_match = re.search(r'(?i)At (\d+)n?d? level', class_feature_description)
+                                        if level_match:
+                                            break
+                                    if i == 2:
+                                        level_match = re.search(r'(?i)At (\d+)r?d? level', class_feature_description)
+                                        if level_match:
+                                            break
+                                    if i == 3:
+                                        level_match = re.search(r'(?i)At (\d+)t?h? level', class_feature_description)
+                                        if level_match:
+                                            break
+                                if level_match:
+                                    class_feature_level = level_match.group(1)
+                                else:
+                                    class_feature_level = 0
+            if is_valid_archetype_feature and class_feature_name:
+                class_feature_info = {
+                    'Name': class_feature_name,
+                    'SubName': sub_feature_name,
+                    'Parent Class': archetype_parent_class_name,
+                    'Archetype': archetype_name,
+                    'Description': class_feature_description if class_feature_description else '',
+                    'Level': class_feature_level if class_feature_level else 0
+                }
 
-                        # Todo: These lines are being appended multiple times  because the bloodline descriptions have \n newline characters in them I think.
-                        if class_feature_name:
-                            class_feature_info = {
-                                'Name': class_feature_name,
-                                'SubName': sub_feature_name,
-                                'Parent Class': archetype_parent_class_name,
-                                'Archetype': archetype_name,
-                                'Description': class_feature_description if class_feature_description else '',
-                                'Level': class_feature_level if class_feature_level else 0
-                            }
+                # Making sure the array doesn't get an exception by filling it with keys if they are not present.
+                if archetype_parent_class_name not in archetypes:
+                    archetypes[archetype_parent_class_name] = {}
+                if archetype_name not in archetypes[archetype_parent_class_name]:
+                    archetypes[archetype_parent_class_name][archetype_name] = []
 
-                            # Making sure the array doesn't get an exception by filling it with keys if they are not present.
-                            if archetype_parent_class_name not in archetypes:
-                                archetypes[archetype_parent_class_name] = {}
-                            if archetype_name not in archetypes[archetype_parent_class_name]:
-                                archetypes[archetype_parent_class_name][archetype_name] = []
-
-                            # Appending the actual data.
-                            archetypes[archetype_parent_class_name][archetype_name].append(class_feature_info)
+                # Appending the actual data.
+                archetypes[archetype_parent_class_name][archetype_name].append(class_feature_info)
 
             archetype_name = None
             class_feature_name = None
             class_feature_description = None
             class_feature_level = None
+            sub_feature_name = None
 
         # Convert the archetypes dictionary to a pandas DataFrame
         archetype_data = []
@@ -341,6 +354,7 @@ def extract_archetype_info_apg(file_path, output_file_name, source_book_name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # Code specific to the ACG:
+    # Todo: Make a special "Sub Class Feature" field for wizard schools (and other future features),
     # file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_class_guide_acg_abilities_class.lst'
     # extract_class_features(file_path, "acg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
     # extract_archetype_info(file_path, "acg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
@@ -349,11 +363,10 @@ if __name__ == '__main__':
     # Todo: The APG uses a different key for class features, it looks like this: KEY:{ArchetypeName} ~ {ClassFeatureName} CATEGORY:Special Ability TYPE:ClassFeatures.{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
     # Todo: Exclude TYPE:{Classname}ClassFeatures.SpecialQuality.ClassSpecialization
     # Todo: Might not include normal classes but only archetypes?
-    # Todo: Make a special "Sub Class Feature" field for wizard schools (and other future features), Extract sub class feature from key in case of schools: KEY:Air School ~ Air Supremacy
-    # Todo: Add cleric domain abilities to the same "Sub Class Feature" field
-    # Todo: Add sorcerer bloodline abilities to the same "Sub Class Feature" field. Bloodline ability template: TYPE:Class Feature.Sorcerer Class Feature.{BloodlineName} ~ Power LVL {level}.Sorcerer
+    # Adds sub class feature from key in case of wizard schools: KEY:Air School ~ Air Supremacy
+    # Adds cleric domain abilities to the same "Sub Class Feature" field
+    # Adds sorcerer bloodline abilities to the same "Sub Class Feature" field. Bloodline ability template: TYPE:Class Feature.Sorcerer Class Feature.{BloodlineName} ~ Power LVL {level}.Sorcerer
     file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_players_guide_apg_abilities_class.lst'
-    # extract_class_features(file_path, "apg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
     extract_archetype_info_apg(file_path, "apg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
 
     # Code specific to the CR:
