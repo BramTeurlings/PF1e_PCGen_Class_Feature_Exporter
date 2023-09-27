@@ -72,6 +72,11 @@ def extract_class_features(file_name, output_file_name, source_book_name):
                             if level_match:
                                 level = level_match.group(1)
                                 break
+                elif part.startswith("PREVARGTEQ:"):
+                    # Get ability level
+                    ability_power_level_match = re.search(r'(?i)(.*?)LVL,(\d{0,2})', part.split("PREVARGTEQ:")[1])
+                    if ability_power_level_match:
+                        level = ability_power_level_match.group(2)
 
             if feature_key and description:
                 class_names.append(class_name.strip())
@@ -112,7 +117,7 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
     # Regular expressions to match relevant lines
     block_pattern = r'(?i)###Block: (.+) Class features'
 
-    with open(file_path, 'r') as file:
+    with open(file_name, 'r') as file:
         lines = file.readlines()
         for line in lines:
             is_valid_class_feature = 1
@@ -157,8 +162,12 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
                                     # Class name was already set and differs from picked up key. Set key as sub_feature_name
                                     sub_feature_name = class_name
                                 class_name = type_match.group(1)
+                        elif re.search(r'(?i)(.+)ClassFeatures\.RagePower(.+)', class_feature_type):
+                            # Dealing with a barbarian rage power, set sub_feature_name to class name
+                            sub_feature_name = class_name
+                            class_name = "Barbarian"
                         elif re.search(r'(?i)Class Feature\.Sorcerer Class Feature\.(.+) ~ Power LVL (.+).Sorcerer', class_feature_type):
-                            # Dealing with wizard school, set sub_feature_name to archetype name
+                            # Dealing with wizard school, set sub_feature_name to class name
                             sub_feature_name = class_name
                             class_name = "Sorcerer"
                             # Capture the bloodline level
@@ -166,7 +175,7 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
                             if bloodline_ability_level_match:
                                 class_feature_level = bloodline_ability_level_match.group(1)
                         elif re.search(r'(?i)WizardClassFeatures\.SpecialQuality\.SuperNatural', class_feature_type) or re.search(r'(?i)WizardClassFeatures\.SpecialQuality\.SpellLike', class_feature_type):
-                            # Dealing with sorcerer bloodline, set sub_feature_name to archetype name
+                            # Dealing with sorcerer bloodline, set sub_feature_name to class name
                             sub_feature_name = class_name
                             class_name = "Wizard"
                         else:
@@ -200,6 +209,11 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
                                     class_feature_level = level_match.group(1)
                                 else:
                                     class_feature_level = 0
+                    elif part.startswith("PREVARGTEQ:"):
+                        # Get ability level
+                        ability_power_level_match = re.search(r'(?i)(.*?)LVL,(\d{0,2})', part.split("PREVARGTEQ:")[1])
+                        if ability_power_level_match:
+                            class_feature_level = ability_power_level_match.group(2)
             if is_valid_class_feature and class_feature_name and class_feature_description:
                 class_feature_info = {
                     'Class': class_name,
@@ -307,7 +321,11 @@ def extract_archetype_info(file_path, output_file_name, source_book_name):
                         class_feature_level = level_match.group(1)
                     else:
                         class_feature_level = 0
-
+                class_feature_level_match = re.search(r'(?i)\tPREVARGTEQ:(.*?)LVL,(.{0,2}?)\t', line)
+                if class_feature_level_match:
+                    # Get ability level
+                    if class_feature_level_match.group(2).strip():
+                        class_feature_level = class_feature_level_match.group(2).strip()
                 if class_feature_name:
                     class_feature_info = {
                         'Name': class_feature_name,
@@ -451,6 +469,11 @@ def extract_archetype_info_apg(file_path, output_file_name, source_book_name):
                                     class_feature_level = level_match.group(1)
                                 else:
                                     class_feature_level = 0
+                    elif part.startswith("PREVARGTEQ:"):
+                        # Get ability level
+                        ability_power_level_match = re.search(r'(?i)(.*?)LVL,(\d{0,2})', part.split("PREVARGTEQ:")[1])
+                        if ability_power_level_match:
+                            class_feature_level = ability_power_level_match.group(2)
             if is_valid_archetype_feature and class_feature_name:
                 class_feature_info = {
                     'Name': class_feature_name,
@@ -511,14 +534,15 @@ if __name__ == '__main__':
     # Adds sub class feature from key in case of wizard schools: KEY:Air School ~ Air Supremacy
     # Adds cleric domain abilities to the same "Sub Class Feature" field
     # Adds sorcerer bloodline abilities to the same "Sub Class Feature" field. Bloodline ability template: TYPE:Class Feature.Sorcerer Class Feature.{BloodlineName} ~ Power LVL {level}.Sorcerer
-    # file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_players_guide_apg_abilities_class.lst'
-    # extract_archetype_info_apg(file_path, "apg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
+    file_path = 'raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_players_guide_apg_abilities_class.lst'
+    extract_archetype_info_apg(file_path, "apg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
 
     # Code specific to the CR:
     # Todo: The CR uses a different key for class features, it looks like this: CATEGORY:Special Ability TYPE:{Classname}ClassFeatures.(SpecialQuality/SpecialAttack). The code will have to be changed accordingly.
-    # Todo: Sorcerer bloodlines have to be handled the same way as the APG
-    # Todo: Cleric domains have to be handled the same way as the APG
-    file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_core_rulebook_cr_abilities_class.lst'
+    # Sorcerer bloodlines are handled the same way as the APG
+    # Cleric domains are handled the same way as the APG
+    # Todo: RogueClassFeatures.Ranger (among others) are showing up in the class field.
+    file_path = 'raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_core_rulebook_cr_abilities_class.lst'
     extract_class_features_cr(file_path, "cr_class_features.xlsx", "Pathfinder Roleplaying Game: Core Rulebook")
 
     # Code specific to the Ultimate Combat Guide:
