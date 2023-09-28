@@ -822,6 +822,7 @@ def extract_archetype_info_uc(file_path, output_file_name, source_book_name):
 if __name__ == '__main__':
     # Todo: Include alchemist discoveries?
     # Todo: Include samurai/cavalier orders?
+    # Todo: Remove garbage characters like '%' and '*' from descriptions
 
     # Code specific to the ACG:
     # Todo: Make a special "Sub Class Feature" field for wizard schools (and other future features),
