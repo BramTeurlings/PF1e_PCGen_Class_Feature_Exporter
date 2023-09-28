@@ -825,9 +825,9 @@ if __name__ == '__main__':
 
     # Code specific to the ACG:
     # Todo: Make a special "Sub Class Feature" field for wizard schools (and other future features),
-    # file_path = 'C:\\Users\\Bram\\PycharmProjects\\ClassFeatureExtractor\\raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_class_guide_acg_abilities_class.lst'
-    # extract_class_features(file_path, "acg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
-    # extract_archetype_info(file_path, "acg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
+    file_path = 'raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_class_guide_acg_abilities_class.lst'
+    extract_class_features(file_path, "acg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
+    extract_archetype_info(file_path, "acg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
 
     # Code specific to the APG:
     # Todo: The APG uses a different key for class features, it looks like this: KEY:{ArchetypeName} ~ {ClassFeatureName} CATEGORY:Special Ability TYPE:ClassFeatures.{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
