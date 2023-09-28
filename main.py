@@ -155,13 +155,21 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
                             sub_feature_name = class_name
                             class_name = "Bard"
                         elif re.search(r'(?i)(.+)ClassFeatures\.SpecialAttack(.+)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialQuality(.+)', class_feature_type):
-                            # Capture the parent class name between "ClassFeatures." and " ClassFeatures"
-                            type_match = re.search(r'(?i)(.+)ClassFeatures\.Special', class_feature_type)
+                            # Dealing with different formatting of class features
+                            type_match = re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures\.Special(.+)', class_feature_type)
                             if type_match:
                                 if class_name and class_name != type_match.group(1):
                                     # Class name was already set and differs from picked up key. Set key as sub_feature_name
                                     sub_feature_name = class_name
                                 class_name = type_match.group(1)
+                            else:
+                                # Capture the parent class name between "ClassFeatures." and " ClassFeatures"
+                                type_match = re.search(r'(?i)(.+)ClassFeatures\.Special', class_feature_type)
+                                if type_match:
+                                    if class_name and class_name != type_match.group(1):
+                                        # Class name was already set and differs from picked up key. Set key as sub_feature_name
+                                        sub_feature_name = class_name
+                                    class_name = type_match.group(1)
                         elif re.search(r'(?i)(.+)ClassFeatures\.RagePower(.+)', class_feature_type):
                             # Dealing with a barbarian rage power, set sub_feature_name to class name
                             sub_feature_name = class_name
