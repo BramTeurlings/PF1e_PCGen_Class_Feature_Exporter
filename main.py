@@ -833,12 +833,12 @@ if __name__ == '__main__':
     # Code specific to the APG:
     # Todo: The APG uses a different key for class features, it looks like this: KEY:{ArchetypeName} ~ {ClassFeatureName} CATEGORY:Special Ability TYPE:ClassFeatures.{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
     # Todo: Exclude TYPE:{Classname}ClassFeatures.SpecialQuality.ClassSpecialization
-    # Todo: Might not include normal classes but only archetypes?
     # Adds sub class feature from key in case of wizard schools: KEY:Air School ~ Air Supremacy
     # Adds cleric domain abilities to the same "Sub Class Feature" field
     # Adds sorcerer bloodline abilities to the same "Sub Class Feature" field. Bloodline ability template: TYPE:Class Feature.Sorcerer Class Feature.{BloodlineName} ~ Power LVL {level}.Sorcerer
     file_path = 'raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_players_guide_apg_abilities_class.lst'
     extract_archetype_info_apg(file_path, "apg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
+    extract_class_features_uc(file_path, "apg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
 
     # Code specific to the CR:
     # Todo: The CR uses a different key for class features, it looks like this: CATEGORY:Special Ability TYPE:{Classname}ClassFeatures.(SpecialQuality/SpecialAttack). The code will have to be changed accordingly.
