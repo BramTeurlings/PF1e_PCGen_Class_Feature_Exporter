@@ -150,11 +150,11 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
                             # Dealing with cleric domain power, set sub_feature_name to class name
                             sub_feature_name = class_name
                             class_name = "Cleric"
-                        elif re.search(r'(?i)(.+)ClassFeatures\.SpecialAttack.Supernatural.BardicPerformance(.+)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialQuality.Supernatural.BardicPerformance(.+)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialAttack.Extraordinary.VersatilePerformance(.+)', class_feature_type):
+                        elif re.search(r'(?i)(.*)ClassFeatures\.SpecialAttack.Supernatural.BardicPerformance(.+)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialQuality.Supernatural.BardicPerformance(.+)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialAttack.Extraordinary.VersatilePerformance(.+)', class_feature_type):
                             # Dealing with bardic/versatile performance, set sub_feature_name to class name
                             sub_feature_name = class_name
                             class_name = "Bard"
-                        elif re.search(r'(?i)(.+)ClassFeatures\.SpecialAttack(.+)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialQuality(.+)', class_feature_type):
+                        elif re.search(r'(?i)(.*)ClassFeatures\.SpecialAttack(.+)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialQuality(.+)', class_feature_type):
                             # Dealing with different formatting of class features
                             type_match = re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures\.Special(.+)', class_feature_type)
                             if type_match:
@@ -170,7 +170,7 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
                                         # Class name was already set and differs from picked up key. Set key as sub_feature_name
                                         sub_feature_name = class_name
                                     class_name = type_match.group(1)
-                        elif re.search(r'(?i)(.+)ClassFeatures\.RagePower(.+)', class_feature_type):
+                        elif re.search(r'(?i)(.+)ClassFeatures\.RagePower(.*)', class_feature_type):
                             # Dealing with a barbarian rage power, set sub_feature_name to class name
                             sub_feature_name = class_name
                             class_name = "Barbarian"
@@ -326,13 +326,13 @@ def extract_class_features_uc(file_name, output_file_name, source_book_name):
                                 class_name = type_match.group(1)
                             else:
                                 # Capture the parent class name between "ClassFeatures." and " ClassFeatures"
-                                type_match = re.search(r'(?i)(.+)ClassFeatures\.Special', class_feature_type)
+                                type_match = re.search(r'(?i)(.*)ClassFeatures\.Special', class_feature_type)
                                 if type_match:
                                     if class_name and class_name != type_match.group(1):
                                         # Class name was already set and differs from picked up key. Set key as sub_feature_name
                                         sub_feature_name = class_name
                                     class_name = type_match.group(1)
-                        elif re.search(r'(?i)(.+)ClassFeatures\.RagePower(.+)', class_feature_type):
+                        elif re.search(r'(?i)(.*)RagePower\.Special(.+)', class_feature_type):
                             # Dealing with a barbarian rage power, set sub_feature_name to class name
                             sub_feature_name = class_name
                             class_name = "Barbarian"
@@ -348,6 +348,22 @@ def extract_class_features_uc(file_name, output_file_name, source_book_name):
                             # Dealing with sorcerer bloodline, set sub_feature_name to class name
                             sub_feature_name = class_name
                             class_name = "Wizard"
+                        elif re.search(r'(?i)SpecialAttack\.AlchemistDiscovery(.*)', class_feature_type) or re.search(r'(?i)SpecialQuality\.AlchemistDiscovery(.*)', class_feature_type):
+                            # Dealing with alchemist discovery, set sub_feature_name to class name
+                            sub_feature_name = class_name
+                            class_name = "Alchemist"
+                        elif re.search(r'(?i)CavalierOrder\.SpecialQuality(.*)', class_feature_type) or re.search(r'(?i)CavalierOrder\.SpecialAttack(.*)', class_feature_type):
+                            # Dealing with samurai order, set sub_feature_name to order
+                            sub_feature_name = "Order"
+                            class_name = "Cavalier"
+                        elif re.search(r'(?i)CavalierOrderAbility\.SpecialQuality(.*)', class_feature_type) or re.search(r'(?i)CavalierOrderAbility\.SpecialAttack(.*)', class_feature_type):
+                            # Dealing with cavalier order ability, set sub_feature_name to class name
+                            sub_feature_name = class_name
+                            class_name = "Cavalier"
+                        elif re.search(r'(?i)SpecialQuality\.SamuraiOrder\.CavalierOrder', class_feature_type):
+                            # Dealing with samurai order, set sub_feature_name to order
+                            sub_feature_name = "Order"
+                            class_name = "Samurai"
                         else:
                             is_valid_class_feature = 0
                     elif part.startswith("DESC:"):
@@ -820,19 +836,16 @@ def extract_archetype_info_uc(file_path, output_file_name, source_book_name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # Todo: Include alchemist discoveries?
-    # Todo: Include samurai/cavalier orders?
-    # Todo: Remove garbage characters like '%' and '*' from descriptions
+    # Done: Include alchemist discoveries?
+    # Done: Include samurai/cavalier orders?
+    # Todo: Remove garbage characters like '%' and '*' from descriptions > We can't, it seems PCgen doesn't have the same descriptions as the wiki due to automating certain things.
 
     # Code specific to the ACG:
-    # Todo: Make a special "Sub Class Feature" field for wizard schools (and other future features),
     file_path = 'raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_advanced_class_guide_acg_abilities_class.lst'
     extract_class_features(file_path, "acg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
     extract_archetype_info(file_path, "acg_archetype_features.xlsx", "Pathfinder Roleplaying Game: Advanced Class Guide")
 
     # Code specific to the APG:
-    # Todo: The APG uses a different key for class features, it looks like this: KEY:{ArchetypeName} ~ {ClassFeatureName} CATEGORY:Special Ability TYPE:ClassFeatures.{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
-    # Todo: Exclude TYPE:{Classname}ClassFeatures.SpecialQuality.ClassSpecialization
     # Adds sub class feature from key in case of wizard schools: KEY:Air School ~ Air Supremacy
     # Adds cleric domain abilities to the same "Sub Class Feature" field
     # Adds sorcerer bloodline abilities to the same "Sub Class Feature" field. Bloodline ability template: TYPE:Class Feature.Sorcerer Class Feature.{BloodlineName} ~ Power LVL {level}.Sorcerer
@@ -841,17 +854,15 @@ if __name__ == '__main__':
     extract_class_features_uc(file_path, "apg_class_features.xlsx", "Pathfinder Roleplaying Game: Advanced Player's Guide")
 
     # Code specific to the CR:
-    # Todo: The CR uses a different key for class features, it looks like this: CATEGORY:Special Ability TYPE:{Classname}ClassFeatures.(SpecialQuality/SpecialAttack). The code will have to be changed accordingly.
+    # The CR uses a different key for class features, it looks like this: CATEGORY:Special Ability TYPE:{Classname}ClassFeatures.(SpecialQuality/SpecialAttack). The code will have to be changed accordingly.
     # Sorcerer bloodlines are handled the same way as the APG
     # Cleric domains are handled the same way as the APG
-    # Todo: RogueClassFeatures.Ranger (among others) are showing up in the class field.
     file_path = 'raw.githubusercontent.com_PCGen_pcgen_master_data_pathfinder_paizo_roleplaying_game_core_rulebook_cr_abilities_class.lst'
     extract_class_features_cr(file_path, "cr_class_features.xlsx", "Pathfinder Roleplaying Game: Core Rulebook")
 
     # Code specific to the Ultimate Combat Guide:
-    # Todo: The CR uses a different key for class features, it looks like this: TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
-    # Todo: The CR uses a different key for archetype class features, it looks like this: KEY:{archetype_name} ~ {class_feature_name} CATEGORY:Special Ability TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
+    # The UC uses a different key for class features, it looks like this: TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
+    # The UC uses a different key for archetype class features, it looks like this: KEY:{archetype_name} ~ {class_feature_name} CATEGORY:Special Ability TYPE:{Classname}ClassFeatures.SpecialQuality. The code will have to be changed accordingly.
     file_path = 'uc_abilities_class.lst'
     extract_class_features_uc(file_path, "uc_class_features.xlsx", "Pathfinder Roleplaying Game: Ultimate Combat")
-    # Todo: Add a search key for "ArchetypeAbility" instead of "ClassFeature"
     extract_archetype_info_uc(file_path, "uc_archetype_features.xlsx", "Pathfinder Roleplaying Game: Ultimate Combat")
