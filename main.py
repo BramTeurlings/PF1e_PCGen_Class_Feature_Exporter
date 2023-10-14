@@ -222,7 +222,7 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
                         ability_power_level_match = re.search(r'(?i)(.*?)LVL,(\d{0,2})', part.split("PREVARGTEQ:")[1])
                         if ability_power_level_match:
                             class_feature_level = ability_power_level_match.group(2)
-            if is_valid_class_feature and class_feature_name and class_feature_description:
+            if is_valid_class_feature and class_feature_name:
                 class_feature_info = {
                     'Class': class_name,
                     'Name': class_feature_name,
