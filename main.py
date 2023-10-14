@@ -154,9 +154,9 @@ def extract_class_features_cr(file_name, output_file_name, source_book_name):
                             # Dealing with bardic/versatile performance, set sub_feature_name to class name
                             sub_feature_name = class_name
                             class_name = "Bard"
-                        elif re.search(r'(?i)(.*)ClassFeatures\.SpecialAttack(.+)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialQuality(.+)', class_feature_type):
+                        elif re.search(r'(?i)(.*)ClassFeatures\.SpecialAttack(.*)', class_feature_type) or re.search(r'(?i)(.+)ClassFeatures\.SpecialQuality(.*)', class_feature_type):
                             # Dealing with different formatting of class features
-                            type_match = re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures\.Special(.+)', class_feature_type)
+                            type_match = re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures\.Special(.*)', class_feature_type)
                             if type_match:
                                 if class_name and class_name != type_match.group(1):
                                     # Class name was already set and differs from picked up key. Set key as sub_feature_name
@@ -600,7 +600,7 @@ def extract_archetype_info_apg(file_path, output_file_name, source_book_name):
                             is_valid_archetype_feature = 0
                     elif part.startswith("TYPE:"):
                         class_feature_type = part.split("TYPE:")[1]
-                        if re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures\.SpecialQuality(.+)', class_feature_type) or re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures\.Archetype(.+)\.SpecialQuality(.+)', class_feature_type):
+                        if re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures\.SpecialQuality(.*)', class_feature_type) or re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures\.Archetype(.+)\.SpecialQuality(.*)', class_feature_type):
                             # Capture the parent class name between "ClassFeatures." and " ClassFeatures"
                             type_match = re.search(r'(?i)ClassFeatures\.(.+)ClassFeatures', class_feature_type)
                             if type_match:
